@@ -8,42 +8,42 @@ import { renderJsonPath, State, StateType } from './state';
  * Properties for defining a Parallel state
  */
 export interface ParallelProps {
-    /**
-     * An optional description for this state
-     *
-     * @default No comment
-     */
-    comment?: string;
+  /**
+   * An optional description for this state
+   *
+   * @default No comment
+   */
+  comment?: string;
 
-    /**
-     * JSONPath expression to select part of the state to be the input to this state.
-     *
-     * May also be the special value DISCARD, which will cause the effective
-     * input to be the empty object {}.
-     *
-     * @default $
-     */
-    inputPath?: string;
+  /**
+   * JSONPath expression to select part of the state to be the input to this state.
+   *
+   * May also be the special value DISCARD, which will cause the effective
+   * input to be the empty object {}.
+   *
+   * @default $
+   */
+  inputPath?: string;
 
-    /**
-     * JSONPath expression to select part of the state to be the output to this state.
-     *
-     * May also be the special value DISCARD, which will cause the effective
-     * output to be the empty object {}.
-     *
-     * @default $
-     */
-    outputPath?: string;
+  /**
+   * JSONPath expression to select part of the state to be the output to this state.
+   *
+   * May also be the special value DISCARD, which will cause the effective
+   * output to be the empty object {}.
+   *
+   * @default $
+   */
+  outputPath?: string;
 
-    /**
-     * JSONPath expression to indicate where to inject the state's output
-     *
-     * May also be the special value DISCARD, which will cause the state's
-     * input to become its output.
-     *
-     * @default $
-     */
-    resultPath?: string;
+  /**
+   * JSONPath expression to indicate where to inject the state's output
+   *
+   * May also be the special value DISCARD, which will cause the state's
+   * input to become its output.
+   *
+   * @default $
+   */
+  resultPath?: string;
 }
 
 /**
@@ -55,75 +55,75 @@ export interface ParallelProps {
  * The Result of a Parallel state is an array of the results of its substatemachines.
  */
 export class Parallel extends State implements INextable {
-    public readonly endStates: INextable[];
+  public readonly endStates: INextable[];
 
-    constructor(parent: cdk.Construct, id: string, props: ParallelProps = {}) {
-        super(parent, id, props);
+  constructor(parent: cdk.Construct, id: string, props: ParallelProps = {}) {
+    super(parent, id, props);
 
-        this.endStates = [this];
+    this.endStates = [this];
+  }
+
+  /**
+   * Add retry configuration for this state
+   *
+   * This controls if and how the execution will be retried if a particular
+   * error occurs.
+   */
+  public retry(props: RetryProps = {}): Parallel {
+    super.addRetry(props);
+    return this;
+  }
+
+  /**
+   * Add a recovery handler for this state
+   *
+   * When a particular error occurs, execution will continue at the error
+   * handler instead of failing the state machine execution.
+   */
+  public onError(handler: IChainable, props: CatchProps = {}): Parallel {
+    super.addCatch(handler.startState, props);
+    return this;
+  }
+
+  /**
+   * Continue normal execution with the given state
+   */
+  public next(next: IChainable): Chain {
+    super.makeNext(next.startState);
+    return Chain.sequence(this, next);
+  }
+
+  /**
+   * Define a branch to run along all other branches
+   */
+  public branch(branch: IChainable): Parallel {
+    const name = `Parallel '${this.stateId}' branch ${this.branches.length + 1}`;
+    super.addBranch(new StateGraph(branch.startState, name));
+    return this;
+  }
+
+  /**
+   * Validate this state
+   */
+  public validate(): string[] {
+    if (this.branches.length === 0) {
+      return ['Parallel must have at least one branch'];
     }
+    return [];
+  }
 
-    /**
-     * Add retry configuration for this state
-     *
-     * This controls if and how the execution will be retried if a particular
-     * error occurs.
-     */
-    public retry(props: RetryProps = {}): Parallel {
-        super.addRetry(props);
-        return this;
-    }
-
-    /**
-     * Add a recovery handler for this state
-     *
-     * When a particular error occurs, execution will continue at the error
-     * handler instead of failing the state machine execution.
-     */
-    public onError(handler: IChainable, props: CatchProps = {}): Parallel {
-        super.addCatch(handler.startState, props);
-        return this;
-    }
-
-    /**
-     * Continue normal execution with the given state
-     */
-    public next(next: IChainable): Chain {
-        super.makeNext(next.startState);
-        return Chain.sequence(this, next);
-    }
-
-    /**
-     * Define a branch to run along all other branches
-     */
-    public branch(branch: IChainable): Parallel {
-        const name = `Parallel '${this.stateId}' branch ${this.branches.length + 1}`;
-        super.addBranch(new StateGraph(branch.startState, name));
-        return this;
-    }
-
-    /**
-     * Validate this state
-     */
-    public validate(): string[] {
-        if (this.branches.length === 0) {
-            return ['Parallel must have at least one branch'];
-        }
-        return [];
-    }
-
-    /**
-     * Return the Amazon States Language object for this state
-     */
-    public toStateJson(): object {
-        return {
-            Type: StateType.Parallel,
-            Comment: this.comment,
-            ResultPath: renderJsonPath(this.resultPath),
-            ...this.renderNextEnd(),
-            ...this.renderInputOutput(),
-            ...this.renderRetryCatch(),
-            ...this.renderBranches(),
-        };
-    }
+  /**
+   * Return the Amazon States Language object for this state
+   */
+  public toStateJson(): object {
+    return {
+      Type: StateType.Parallel,
+      Comment: this.comment,
+      ResultPath: renderJsonPath(this.resultPath),
+      ...this.renderNextEnd(),
+      ...this.renderInputOutput(),
+      ...this.renderRetryCatch(),
+      ...this.renderBranches(),
+    };
+  }
 }

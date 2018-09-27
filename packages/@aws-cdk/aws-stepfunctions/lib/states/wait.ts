@@ -7,46 +7,46 @@ import { State, StateType } from './state';
  * Properties for defining a Wait state
  */
 export interface WaitProps {
-    /**
-     * An optional description for this state
-     *
-     * @default No comment
-     */
-    comment?: string;
+  /**
+   * An optional description for this state
+   *
+   * @default No comment
+   */
+  comment?: string;
 
-    /**
-     * Wait a fixed number of seconds
-     *
-     * Exactly one of seconds, secondsPath, timestamp, timestampPath must be supplied.
-     */
-    seconds?: number;
+  /**
+   * Wait a fixed number of seconds
+   *
+   * Exactly one of seconds, secondsPath, timestamp, timestampPath must be supplied.
+   */
+  seconds?: number;
 
-    /**
-     * Wait until the given ISO8601 timestamp
-     *
-     * Exactly one of seconds, secondsPath, timestamp, timestampPath must be supplied.
-     *
-     * @example 2016-03-14T01:59:00Z
-     */
-    timestamp?: string;
+  /**
+   * Wait until the given ISO8601 timestamp
+   *
+   * Exactly one of seconds, secondsPath, timestamp, timestampPath must be supplied.
+   *
+   * @example 2016-03-14T01:59:00Z
+   */
+  timestamp?: string;
 
-    /**
-     * Wait for a number of seconds stored in the state object.
-     *
-     * Exactly one of seconds, secondsPath, timestamp, timestampPath must be supplied.
-     *
-     * @example $.waitSeconds
-     */
-    secondsPath?: string;
+  /**
+   * Wait for a number of seconds stored in the state object.
+   *
+   * Exactly one of seconds, secondsPath, timestamp, timestampPath must be supplied.
+   *
+   * @example $.waitSeconds
+   */
+  secondsPath?: string;
 
-    /**
-     * Wait until a timestamp found in the state object.
-     *
-     * Exactly one of seconds, secondsPath, timestamp, timestampPath must be supplied.
-     *
-     * @example $.waitTimestamp
-     */
-    timestampPath?: string;
+  /**
+   * Wait until a timestamp found in the state object.
+   *
+   * Exactly one of seconds, secondsPath, timestamp, timestampPath must be supplied.
+   *
+   * @example $.waitTimestamp
+   */
+  timestampPath?: string;
 }
 
 /**
@@ -55,44 +55,44 @@ export interface WaitProps {
  * A Wait state can be used to delay execution of the state machine for a while.
  */
 export class Wait extends State implements INextable {
-    public readonly endStates: INextable[];
+  public readonly endStates: INextable[];
 
-    private readonly seconds?: number;
-    private readonly timestamp?: string;
-    private readonly secondsPath?: string;
-    private readonly timestampPath?: string;
+  private readonly seconds?: number;
+  private readonly timestamp?: string;
+  private readonly secondsPath?: string;
+  private readonly timestampPath?: string;
 
-    constructor(parent: cdk.Construct, id: string, props: WaitProps) {
-        super(parent, id, props);
+  constructor(parent: cdk.Construct, id: string, props: WaitProps) {
+    super(parent, id, props);
 
-        this.seconds = props.seconds;
-        this.timestamp = props.timestamp;
-        this.secondsPath = props.secondsPath;
-        this.timestampPath = props.timestampPath;
+    this.seconds = props.seconds;
+    this.timestamp = props.timestamp;
+    this.secondsPath = props.secondsPath;
+    this.timestampPath = props.timestampPath;
 
-        this.endStates = [this];
-    }
+    this.endStates = [this];
+  }
 
-    /**
-     * Continue normal execution with the given state
-     */
-    public next(next: IChainable): Chain {
-        super.makeNext(next.startState);
-        return Chain.sequence(this, next);
-    }
+  /**
+   * Continue normal execution with the given state
+   */
+  public next(next: IChainable): Chain {
+    super.makeNext(next.startState);
+    return Chain.sequence(this, next);
+  }
 
-    /**
-     * Return the Amazon States Language object for this state
-     */
-    public toStateJson(): object {
-        return {
-            Type: StateType.Wait,
-            Comment: this.comment,
-            Seconds: this.seconds,
-            Timestamp: this.timestamp,
-            SecondsPath: this.secondsPath,
-            TimestampPath: this.timestampPath,
-            ...this.renderNextEnd(),
-        };
-    }
+  /**
+   * Return the Amazon States Language object for this state
+   */
+  public toStateJson(): object {
+    return {
+      Type: StateType.Wait,
+      Comment: this.comment,
+      Seconds: this.seconds,
+      Timestamp: this.timestamp,
+      SecondsPath: this.secondsPath,
+      TimestampPath: this.timestampPath,
+      ...this.renderNextEnd(),
+    };
+  }
 }

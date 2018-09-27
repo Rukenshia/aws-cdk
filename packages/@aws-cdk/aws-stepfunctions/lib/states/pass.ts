@@ -7,51 +7,51 @@ import { renderJsonPath, State, StateType } from './state';
  * Properties for defining a Pass state
  */
 export interface PassProps {
-    /**
-     * An optional description for this state
-     *
-     * @default No comment
-     */
-    comment?: string;
+  /**
+   * An optional description for this state
+   *
+   * @default No comment
+   */
+  comment?: string;
 
-    /**
-     * JSONPath expression to select part of the state to be the input to this state.
-     *
-     * May also be the special value DISCARD, which will cause the effective
-     * input to be the empty object {}.
-     *
-     * @default $
-     */
-    inputPath?: string;
+  /**
+   * JSONPath expression to select part of the state to be the input to this state.
+   *
+   * May also be the special value DISCARD, which will cause the effective
+   * input to be the empty object {}.
+   *
+   * @default $
+   */
+  inputPath?: string;
 
-    /**
-     * JSONPath expression to select part of the state to be the output to this state.
-     *
-     * May also be the special value DISCARD, which will cause the effective
-     * output to be the empty object {}.
-     *
-     * @default $
-     */
-    outputPath?: string;
+  /**
+   * JSONPath expression to select part of the state to be the output to this state.
+   *
+   * May also be the special value DISCARD, which will cause the effective
+   * output to be the empty object {}.
+   *
+   * @default $
+   */
+  outputPath?: string;
 
-    /**
-     * JSONPath expression to indicate where to inject the state's output
-     *
-     * May also be the special value DISCARD, which will cause the state's
-     * input to become its output.
-     *
-     * @default $
-     */
-    resultPath?: string;
+  /**
+   * JSONPath expression to indicate where to inject the state's output
+   *
+   * May also be the special value DISCARD, which will cause the state's
+   * input to become its output.
+   *
+   * @default $
+   */
+  resultPath?: string;
 
-    /**
-     * If given, treat as the result of this operation
-     *
-     * Can be used to inject or replace the current execution state.
-     *
-     * @default No injected result
-     */
-    result?: any;
+  /**
+   * If given, treat as the result of this operation
+   *
+   * Can be used to inject or replace the current execution state.
+   *
+   * @default No injected result
+   */
+  result?: any;
 }
 
 /**
@@ -60,36 +60,36 @@ export interface PassProps {
  * A Pass state can be used to transform the current exeuction's state.
  */
 export class Pass extends State implements INextable {
-    public readonly endStates: INextable[];
+  public readonly endStates: INextable[];
 
-    private readonly result?: any;
+  private readonly result?: any;
 
-    constructor(parent: cdk.Construct, id: string, props: PassProps = {}) {
-        super(parent, id, props);
+  constructor(parent: cdk.Construct, id: string, props: PassProps = {}) {
+    super(parent, id, props);
 
-        this.result = props.result;
-        this.endStates = [this];
-    }
+    this.result = props.result;
+    this.endStates = [this];
+  }
 
-    /**
-     * Continue normal execution with the given state
-     */
-    public next(next: IChainable): Chain {
-        super.makeNext(next.startState);
-        return Chain.sequence(this, next);
-    }
+  /**
+   * Continue normal execution with the given state
+   */
+  public next(next: IChainable): Chain {
+    super.makeNext(next.startState);
+    return Chain.sequence(this, next);
+  }
 
-    /**
-     * Return the Amazon States Language object for this state
-     */
-    public toStateJson(): object {
-        return {
-            Type: StateType.Pass,
-            Comment: this.comment,
-            Result: this.result,
-            ResultPath: renderJsonPath(this.resultPath),
-            ...this.renderInputOutput(),
-            ...this.renderNextEnd(),
-        };
-    }
+  /**
+   * Return the Amazon States Language object for this state
+   */
+  public toStateJson(): object {
+    return {
+      Type: StateType.Pass,
+      Comment: this.comment,
+      Result: this.result,
+      ResultPath: renderJsonPath(this.resultPath),
+      ...this.renderInputOutput(),
+      ...this.renderNextEnd(),
+    };
+  }
 }
